@@ -11,13 +11,14 @@ using System.Net.Http;
 using ApiRestCrossover.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
 
 namespace ApiRestCrossover.Services
 {
     public class ApiAuthService : IApiAuthService
     {
         private static string _user;
-        private static string _userEmeal;
+        private static string _userEmail;
         private static string _password;
         private static string _urlBase;
         private static string _token;
@@ -26,7 +27,7 @@ namespace ApiRestCrossover.Services
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
             _user= builder.GetSection("ApiAuthSettings:User").Value;
-            _userEmeal = builder.GetSection("ApiAuthSettings:UserMail").Value;
+            _userEmail = builder.GetSection("ApiAuthSettings:UserEmail").Value;
             _password = builder.GetSection("ApiAuthSettings:Password").Value;
             _urlBase = builder.GetSection("ApiAuthSettings:UrlBase").Value;
         }
@@ -38,12 +39,13 @@ namespace ApiRestCrossover.Services
                 {
                     BaseAddress = new Uri(_urlBase)
                 };
-                var credentials = new UserAuth() { UserEmeal = _userEmeal, Password = _password };
+                var credentials = new UserAuth() { Email = _userEmail, Password = _password };
                 var content = new StringContent(JsonConvert.SerializeObject(credentials), Encoding.UTF8, "application/json");
                 var response = await client.PostAsync("/api/authaccount/login", content);
                 var jsonResult = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<TokenResult>(jsonResult);
-                _token = result.token;
+                _token = result.data.Token;
+                _user = result.data.Id.ToString();
             }
             catch (Exception ex)
             {

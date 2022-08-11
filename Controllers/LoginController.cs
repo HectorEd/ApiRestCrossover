@@ -33,7 +33,10 @@ namespace ApiRestCrossover.Controllers
             try
             {
                 UserModel user = await _apiService.User();
-                return Ok(user);
+                if (user != null)
+                    return Ok(user);
+                return new BadRequestResult();
+                
             }
             catch(Exception ex)
             {
